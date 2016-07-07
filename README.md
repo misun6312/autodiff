@@ -22,6 +22,6 @@ And it can calculate the gradients automatically.
 
 Setup
 -------
-Julia 0.4.5
+Julia 0.4.5  
 FowardDiff v0.2
 
