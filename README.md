@@ -11,7 +11,7 @@ Automatic Differentiation is a technology for automatically augmenting computer 
 
 Status
 -------
-[Julia_autodiff](https://github.com/misun6312/autodiff/blob/master/Julia_autodiff.ipynb)
+[Julia_autodiff JupyterNotebook](https://github.com/misun6312/autodiff/blob/master/Julia_autodiff.ipynb)
 
 In Julia, it produces the same Loglikelihood values with the bing's matlab code. 
 And it can calculate the gradients automatically.
