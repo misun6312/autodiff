@@ -7,7 +7,7 @@ Goal
 Adapting Bing’s model to compute it using Algorithmic Differentiation.
 [(Brunton et al. 2013 Science)] (http://brodylab.org/publications-2/brunton-et-al-2013)
 
-Automatic Differentiation is a technology for automatically augmenting computer programs, including arbitrarily complex simulations, with statements for the computation of derivatives, also known as sensitivities. AD exploits the fact that every computer program, no matter how complicated, executes a sequence of elementary arithmetic operations (addition, subtraction, multiplication, division, etc.) and elementary functions (exp, log, sin, cos, etc.). By applying the chain rule repeatedly to these operations, derivatives of arbitrary order can be computed automatically, accurately to working precision, and using at most a small constant factor more arithmetic operations than the original program.
+Automatic Differentiation is a technology for automatically augmenting computer programs, including arbitrarily complex simulations, with statements for the computation of derivatives, also known as sensitivities. Automatic differentiation is important because you don't want to have to hand-code a variation of gradient computation every time you're experimenting with a new arrangement of model. AD exploits the fact that every computer program, no matter how complicated, executes a sequence of elementary arithmetic operations (addition, subtraction, multiplication, division, etc.) and elementary functions (exp, log, sin, cos, etc.). By applying the chain rule repeatedly to these operations, derivatives of arbitrary order can be computed automatically, accurately to working precision, and using at most a small constant factor more arithmetic operations than the original program.
 
 Status
 -------
@@ -57,8 +57,8 @@ To retrieve all the lower-order calculations along with the normal result of v0.
 
 Setup Environment
 -------
-Julia 0.4.5  
-FowardDiff v0.2
+* Julia 0.4.5  
+* FowardDiff v0.2
 
 Install Julia
 
@@ -74,4 +74,8 @@ Install ForwardDiff, simply use Julia’s package manager:
 
 Implementing in Python (Theano / Tensorflow) 
 -------
+* [Theano Automatic Differentiation JupyterNotebook (incomplete)](https://github.com/misun6312/autodiff/blob/master/Theano_autodiff.ipynb) - It can only compute gradients of bias and lapse automatically. For the rest of parameters, it produces nan value.
+* [Theano Numerical Differentiation JupyterNotebook (it's working)](https://github.com/misun6312/autodiff/blob/master/Theano_Manualdiff.ipynb) - This follows the numerical approach to compute the derivative for each parameters from Bing's paper[(Section 3.2 the Supplementary Information)](http://science.sciencemag.org/content/suppl/2013/04/04/340.6128.95.DC1). 
+* [Tensorflow Automatic Differentiation JupyterNotebook (incomplete)](https://github.com/misun6312/autodiff/blob/master/Tensorflow_autodiff3.ipynb)  
+
 
