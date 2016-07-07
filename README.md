@@ -74,8 +74,12 @@ Install ForwardDiff, simply use Julia’s package manager:
 
 Implementing in Python (Theano / Tensorflow) 
 -------
-* [Theano Automatic Differentiation JupyterNotebook (incomplete)](https://github.com/misun6312/autodiff/blob/master/Theano_autodiff.ipynb) - It can only compute gradients of bias and lapse automatically. For the rest of parameters, it produces nan value.
-* [Theano Numerical Differentiation JupyterNotebook (it's working)](https://github.com/misun6312/autodiff/blob/master/Theano_Manualdiff.ipynb) - This follows the numerical approach to compute the derivative for each parameters from Bing's paper[(Section 3.2 the Supplementary Information)](http://science.sciencemag.org/content/suppl/2013/04/04/340.6128.95.DC1). 
+* [Theano Automatic Differentiation JupyterNotebook (incomplete)](https://github.com/misun6312/autodiff/blob/master/Theano_autodiff.ipynb)   
+It can only compute gradients of bias and lapse automatically. For the rest of parameters, it produces nan value.
+
+* [Theano Numerical Differentiation JupyterNotebook (it's working)](https://github.com/misun6312/autodiff/blob/master/Theano_Manualdiff.ipynb)   
+This follows the numerical approach to compute the derivative for each parameters from Bing's paper [(Section 3.2 the Supplementary Information)](http://science.sciencemag.org/content/suppl/2013/04/04/340.6128.95.DC1). 
+
 * [Tensorflow Automatic Differentiation JupyterNotebook (incomplete)](https://github.com/misun6312/autodiff/blob/master/Tensorflow_autodiff3.ipynb)  
 
 
