@@ -5,16 +5,16 @@ Automatic Differentiation
 Goal
 ------------
 Adapting Bing’s model to compute it using Algorithmic Differentiation.
-[Bing's paper] (http://brodylab.org/publications-2/brunton-et-al-2013)
+[(Brunton et al. 2013 Science)] (http://brodylab.org/publications-2/brunton-et-al-2013)
 
-Automatic Differentiation is a technology for automatically augmenting computer programs, including arbitrarily complex simulations, with statements for the computation of derivatives, also known as sensitivities.
+Automatic Differentiation is a technology for automatically augmenting computer programs, including arbitrarily complex simulations, with statements for the computation of derivatives, also known as sensitivities. AD exploits the fact that every computer program, no matter how complicated, executes a sequence of elementary arithmetic operations (addition, subtraction, multiplication, division, etc.) and elementary functions (exp, log, sin, cos, etc.). By applying the chain rule repeatedly to these operations, derivatives of arbitrary order can be computed automatically, accurately to working precision, and using at most a small constant factor more arithmetic operations than the original program.
 
 Status
 -------
 [Julia_autodiff_JupyterNotebook](https://github.com/misun6312/autodiff/blob/master/Julia_autodiff.ipynb)
 
-In Julia, now it produces the same Loglikelihood values with the bing's matlab code.  
-And it can calculate the gradients automatically using ForwardDiff.  
+In Julia, now it produces exact same Loglikelihood values as the LL values from the bing's matlab code.  
+And it can compute the gradients for each of the parameters automatically using ForwardDiff (http://www.juliadiff.org/ForwardDiff.jl/index.html).  
 From the original version of the code in Julia, I updated the code for click adaptation part using inter-click interval instead of dt to consider all clicks and fixed some bugs. 
 There is a little difference between the graident values of 9 parameters with error mean, std().
 
@@ -51,8 +51,6 @@ To retrieve all the lower-order calculations along with the normal result of v0.
     h = ForwardDiff.hessian(out)
 
 
-
-
 ```
 [LL dLL likey output] = single_trial35(param, mydata)
 ```
@@ -61,6 +59,18 @@ Setup Environment
 -------
 Julia 0.4.5  
 FowardDiff v0.2
+
+Install Julia
+
+    sudo add-apt-repository ppa:staticfloat/juliareleases
+    sudo add-apt-repository ppa:staticfloat/julia-deps
+    sudo apt-get update
+    sudo apt-get install julia
+
+Install ForwardDiff, simply use Julia’s package manager:
+
+    julia> Pkg.add("ForwardDiff")
+
 
 Implementing in Python (Theano / Tensorflow) 
 -------
