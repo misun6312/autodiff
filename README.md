@@ -74,12 +74,37 @@ Install ForwardDiff, simply use Julia’s package manager:
 
 Implementing in Python (Theano / Tensorflow) 
 -------
+## Theano 
+* [Theano Numerical Differentiation JupyterNotebook (it's working)](https://github.com/misun6312/autodiff/blob/master/Theano_Manualdiff.ipynb)   
+This follows the numerical approach to compute the derivative for each parameters from Bing's paper [(Section 3.2 the Supplementary Information)](http://science.sciencemag.org/content/suppl/2013/04/04/340.6128.95.DC1).  
+
 * [Theano Automatic Differentiation JupyterNotebook (incomplete)](https://github.com/misun6312/autodiff/blob/master/Theano_autodiff.ipynb)   
 It can only compute gradients of bias and lapse automatically. For the rest of parameters, it produces nan value.
 
-* [Theano Numerical Differentiation JupyterNotebook (it's working)](https://github.com/misun6312/autodiff/blob/master/Theano_Manualdiff.ipynb)   
-This follows the numerical approach to compute the derivative for each parameters from Bing's paper [(Section 3.2 the Supplementary Information)](http://science.sciencemag.org/content/suppl/2013/04/04/340.6128.95.DC1). 
+Theano is a Python library that allows you to define, optimize, and evaluate mathematical expressions involving multi-dimensional arrays both on CPU and GPU efficiently.   
 
+- Scan = for loop
+- set_subtensor = array element assignment
+- Shared Variable
+- Construct Model(Graph) -> Compile
+- configuration (fast_run mode, debug mode)
+- 
+
+## Tensorflow 
 * [Tensorflow Automatic Differentiation JupyterNotebook (incomplete)](https://github.com/misun6312/autodiff/blob/master/Tensorflow_autodiff3.ipynb)  
 
+TensorFlow is a Google-developed Python and C++ library that allows you to define, optimize, and evaluate mathematical expressions involving multi-dimensional arrays both on CPU and GPU efficiently.
 
+- Very inconvenient to use array index.. (not supporting negative index, have to use tf.slice to get the subset of array)
+- Type casting is complicated and limited
+- 
+- Variable
+- Placeholder : a variable that we will assign the data later. It allows to create computation graph without data we then feed data into the graph through placeholders.
+- Construct Model(Graph) -> Launch the Graph
+
+
+## Conclusion
+Both libraries are using the concept of Tensor, which is the element generating a computational flow graph. Nodes in the graph represent mathematical operations, while the graph edges represent the multidimensional data arrays(tensors) communicated between them. A Tensor object is a symbolic handle to the result of an operation, but does not actually hold the values of the operation's output. The strength of Tensor is once you build up complicated expressions as a dataflow graph, then you can offload the computation of the entire graph to a Tensorflow Session, which is able to execute the whole computation much more efficiently than executing the operations one-by-one. 
+The downside of both libraries is if you want to use the symbolic gradient, They can only compute the symbolic gradient inside computation graph done in Theano/Tensorflow. So you will need to convert that part completely to Theano/Tensorflow functions. And it's hard to debug. The error message is not intuitive because they are following define-and-run method. 
+
+We still can use the numerical method to compute gradients and expect to speed up with GPU. 
