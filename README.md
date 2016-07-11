@@ -79,8 +79,9 @@ julia> Pkg.add("Optim")
 Next step
 -------
 * Fit the model and compare the result with bing's matlab code. 
-* Tweak the model and test the Automatic Differentiation
-* Upload the code to Amazon AWS and run it on the cloud :) 
+* Tweak the model and test the Automatic Differentiation (linear model/cubic model/cubic only model)
+* Spock!! 
+* Upload the code to Amazon AWS and run it on the cloud
 
 Amazon AWS is a setting where you can easily load a given image on a computer that can be chosen from a range of different memory and processing characteristics (you can find a list of available instances here). 
 
