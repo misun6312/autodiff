@@ -84,6 +84,28 @@ Next step
 
 Amazon AWS is a setting where you can easily load a given image on a computer that can be chosen from a range of different memory and processing characteristics (you can find a list of available instances here). 
 
+Tips
+-------
+### Jupyter Notebook
+The Jupyter Notebook is a web application that allows you to create and share documents that contain live code, equations, visualizations and explanatory text. 
+
+### Profiling In Julia
+Profiling allows you to measure the performance of your running code and identify lines that serve as bottlenecks.
+
+The most useful tool for measuring performance in Julia is the @time macro.
+```
+@time f(x)
+```
+On the first call function, f gets compiled. You should not take the results of this run seriously. For the second run, note that in addition to reporting the time, it also indicated that a large amount of memory was allocated.
+
+@profile runs your expression while taking periodic backtraces. These are appended to an internal buffer of backtraces.
+```
+@profile f(x)
+Profile.print()
+Profile.clear_malloc_data() 
+```
+
+
 ******
 ### Attempt implementing in Python (Theano / Tensorflow) 
 
@@ -92,11 +114,14 @@ Amazon AWS is a setting where you can easily load a given image on a computer th
 This follows the numerical approach to compute the derivative for each parameters from Bing's paper [(Section 3.2 the Supplementary Information)](http://science.sciencemag.org/content/suppl/2013/04/04/340.6128.95.DC1).  
 
 * [Theano Automatic Differentiation JupyterNotebook (incomplete)](https://github.com/misun6312/autodiff/blob/master/Theano_autodiff.ipynb)   
-It can only compute gradients of bias and lapse automatically. For the rest of parameters, it produces nan value.
+It can only compute gradients of 'bias' and 'lapse' automatically. For the rest of parameters, it produces nan value.
+I dig into this problem for a long time but couldn't figure it out the exact reason(http://deeplearning.net/software/theano/tutorial/nan_tutorial.html).
+I guess while I was converting the code with tensors there must be something wrong. Compared to implementation in Julia, I got helped a lot with convert function in Julia, which makes the code more flexible to implement. But in Theano, they don't support that kind of function. eval() and get_value() were good candidates but it was not working. 
 
-Theano is a Python library that allows you to define, optimize, and evaluate mathematical expressions involving multi-dimensional arrays both on CPU and GPU efficiently.   
+Theano is a Python library that allows you to define, optimize, and evaluate mathematical expressions involving multi-dimensional arrays both on CPU and GPU efficiently. Theano offers a good amount of flexibility, but has some limitations too. You must answer for yourself the following question: How can my algorithm be cleverly written so as to make the most of what Theano can do?   
 
-- Scan = for loop
+Here's some tips that you need to make sure for using Theano
+- While- or for-Loops within an expression graph are supported, but only via the theano.scan() op (which puts restrictions on how the loop body can interact with the rest of the graph).
 - set_subtensor = array element assignment
 - Shared Variable
 - Construct Model(Graph) -> Compile
