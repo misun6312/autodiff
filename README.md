@@ -11,7 +11,7 @@ Automatic Differentiation is a technology for automatically augmenting computer 
 
 Status
 -------
-[Julia_autodiff_JupyterNotebook](https://github.com/misun6312/autodiff/blob/master/Julia_autodiff.ipynb)
+* Automatic Differentiation in Julia [(notebook)](https://github.com/misun6312/autodiff/blob/master/Julia_autodiff.ipynb) [(code)](https://github.com/misun6312/autodiff/blob/master/julia/opt_Julia_autodiff_script.jl)
 
 In Julia, now it produces exact same Loglikelihood values as the LL values from the bing's matlab code.  
 And it can compute the gradients for each of the parameters automatically using ForwardDiff (http://www.juliadiff.org/ForwardDiff.jl/index.html). For optimizing the log likelihood function with respect to parameters, we will use Optim(https://github.com/JuliaOpt/Optim.jl). 
@@ -110,10 +110,10 @@ Profile.clear_malloc_data()
 ### Attempt implementing in Python (Theano / Tensorflow) 
 
 ### Theano 
-* [Theano Numerical Differentiation JupyterNotebook (it's working)](https://github.com/misun6312/autodiff/blob/master/Theano_Manualdiff.ipynb)   
+* Theano Numerical Differentiation(it's working) [(notebook)](https://github.com/misun6312/autodiff/blob/master/Theano_Manualdiff.ipynb)   
 This follows the numerical approach to compute the derivative for each parameters from Bing's paper [(Section 3.2 the Supplementary Information)](http://science.sciencemag.org/content/suppl/2013/04/04/340.6128.95.DC1).  
 
-* [Theano Automatic Differentiation JupyterNotebook (incomplete)](https://github.com/misun6312/autodiff/blob/master/Theano_autodiff.ipynb)   
+* Theano Automatic Differentiation(incomplete) [(notebook)](https://github.com/misun6312/autodiff/blob/master/Theano_autodiff.ipynb)   
 It can only compute gradients of 'bias' and 'lapse' automatically. For the rest of parameters, it produces nan value.
 I dig into this problem for a long time but couldn't figure it out the exact reason(http://deeplearning.net/software/theano/tutorial/nan_tutorial.html).
 I guess while I was converting the code with tensors there must be something wrong. Compared to implementation in Julia, I got helped a lot with convert function in Julia, which makes the code more flexible to implement. But in Theano, they don't support that kind of function. eval() and get_value() were good candidates but it was not working. 
@@ -128,7 +128,7 @@ Here's some tips that you need to make sure for using Theano
 - configuration (fast_run mode, debug mode)
 
 ### Tensorflow 
-* [Tensorflow Automatic Differentiation JupyterNotebook (incomplete)](https://github.com/misun6312/autodiff/blob/master/Tensorflow_autodiff3.ipynb)  
+* Tensorflow Automatic Differentiation (incomplete) [(notebook)](https://github.com/misun6312/autodiff/blob/master/Tensorflow_autodiff3.ipynb)  
 
 TensorFlow is a Google-developed Python and C++ library that allows you to define, optimize, and evaluate mathematical expressions involving multi-dimensional arrays both on CPU and GPU efficiently.
 
