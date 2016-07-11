@@ -110,7 +110,7 @@ Profile.clear_malloc_data()
 ### Attempt implementing in Python (Theano / Tensorflow) 
 
 ### Theano 
-* Theano Numerical Differentiation(it's working) [(notebook)](https://github.com/misun6312/autodiff/blob/master/Theano_Manualdiff.ipynb)   
+* Theano Numerical Differentiation(it's working) [(notebook)](https://github.com/misun6312/autodiff/blob/master/Theano_NumericDiff.ipynb)   
 This follows the numerical approach to compute the derivative for each parameters from Bing's paper [(Section 3.2 the Supplementary Information)](http://science.sciencemag.org/content/suppl/2013/04/04/340.6128.95.DC1).  
 
 * Theano Automatic Differentiation(incomplete) [(notebook)](https://github.com/misun6312/autodiff/blob/master/Theano_autodiff.ipynb)   
