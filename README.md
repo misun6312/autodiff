@@ -14,8 +14,9 @@ Status
 [Julia_autodiff_JupyterNotebook](https://github.com/misun6312/autodiff/blob/master/Julia_autodiff.ipynb)
 
 In Julia, now it produces exact same Loglikelihood values as the LL values from the bing's matlab code.  
-And it can compute the gradients for each of the parameters automatically using ForwardDiff (http://www.juliadiff.org/ForwardDiff.jl/index.html).  
-From the original version of the code in Julia, I updated the code for click adaptation part using inter-click interval instead of dt to consider all clicks and fixed some bugs. ** And Optimized it! ** There was one line in the code which required huge memory allocation.
+And it can compute the gradients for each of the parameters automatically using ForwardDiff (http://www.juliadiff.org/ForwardDiff.jl/index.html). For optimizing the log likelihood function with respect to parameters, we will use Optim(https://github.com/JuliaOpt/Optim.jl). 
+
+From the original version of the code in Julia, I updated the code for click adaptation part using inter-click interval instead of dt to consider all clicks and fixed some bugs. ** And Optimized it! There was one line in the code which required huge memory allocation.
 ```julia
 lp = find(bin_centers .<= sbins[k])[end]
 ```
@@ -54,16 +55,13 @@ g = ForwardDiff.gradient(out)
 h = ForwardDiff.hessian(out)
 ```
 
-```matlab
-[LL dLL likey output] = single_trial35(param, mydata)
-```
 
 Setup Environment
 -------
 * Julia 0.4.5  
-* FowardDiff v0.2
-* Optim v0.5.0
-* MAT v0.2
+* FowardDiff v0.2 : for Automatic Differentiation
+* Optim v0.5.0 : for functional optimization
+* MAT v0.2 : to read .mat file
 
 Install Julia
 ```bash
@@ -72,9 +70,10 @@ sudo add-apt-repository ppa:staticfloat/julia-deps
 sudo apt-get update
 sudo apt-get install julia
 ```
-Install ForwardDiff, simply use Julia’s package manager:
+Install ForwardDiff and other available packages, simply use Julia’s package manager:
 ```bash
 julia> Pkg.add("ForwardDiff")
+julia> Pkg.add("Optim")
 ```
 
 Implementing in Python (Theano / Tensorflow) 
