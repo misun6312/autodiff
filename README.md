@@ -35,7 +35,7 @@ function convert(::Array{Float64}, x::Array{ForwardDiff.Dual})
     return y
 end
 ```
-ForwardDiff.Dual is now supporting ceil, floor function like below. 
+ForwardDiff.Dual is now supporting *ceil, floor* function like below. 
 ```julia
 binN = ceil(Int, B/dx) 
 binBias = floor(Int, bias/dx) + binN+1  
