@@ -15,8 +15,11 @@ Status
 
 In Julia, now it produces exact same Loglikelihood values as the LL values from the bing's matlab code.  
 And it can compute the gradients for each of the parameters automatically using ForwardDiff (http://www.juliadiff.org/ForwardDiff.jl/index.html).  
-From the original version of the code in Julia, I updated the code for click adaptation part using inter-click interval instead of dt to consider all clicks and fixed some bugs. 
-There is a little difference between the graident values of 9 parameters with error mean, std().
+From the original version of the code in Julia, I updated the code for click adaptation part using inter-click interval instead of dt to consider all clicks and fixed some bugs. ** And Optimized it! ** There was one line in the code which required huge memory allocation.
+```julia
+lp = find(bin_centers .<= sbins[k])[end]
+```
+After fixing this line it's way faster than before! There is some more tips to make the code run as fast as possible in [this link](http://docs.julialang.org/en/release-0.4/manual/performance-tips/?highlight=performance). 
 
 After updating the Julia packages with Pkg.update(), ForwardDiff was updated from v0.1 to v0.2. It turns out few API changes have occured between ForwardDiff v0.1 and v0.2.  
 
@@ -59,6 +62,8 @@ Setup Environment
 -------
 * Julia 0.4.5  
 * FowardDiff v0.2
+* Optim v0.5.0
+* MAT v0.2
 
 Install Julia
 ```bash
