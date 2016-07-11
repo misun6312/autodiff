@@ -20,7 +20,7 @@ From the original version of the code in Julia, I updated the code for click ada
 ```julia
 lp = find(bin_centers .<= sbins[k])[end]
 ```
-After fixing this line it's way faster than before! There is some more tips to make the code run as fast as possible in [this link](http://docs.julialang.org/en/release-0.4/manual/performance-tips/?highlight=performance). 
+After fixing this line it's way faster than before! And I tried to avoid using global variables. There are some more tips to make the code run as fast as possible in [this link](http://docs.julialang.org/en/release-0.4/manual/performance-tips/?highlight=performance). 
 
 After updating the Julia packages with Pkg.update(), ForwardDiff was updated from v0.1 to v0.2. It turns out few API changes have occured between ForwardDiff v0.1 and v0.2.  
 
@@ -76,8 +76,17 @@ julia> Pkg.add("ForwardDiff")
 julia> Pkg.add("Optim")
 ```
 
-Implementing in Python (Theano / Tensorflow) 
+Next step
 -------
+* Fit the model and compare the result with bing's matlab code. 
+* Tweak the model and test the Automatic Differentiation
+* Upload the code to Amazon AWS and run it on the cloud :) 
+
+Amazon AWS is a setting where you can easily load a given image on a computer that can be chosen from a range of different memory and processing characteristics (you can find a list of available instances here). 
+
+******
+### Attempt implementing in Python (Theano / Tensorflow) 
+
 ### Theano 
 * [Theano Numerical Differentiation JupyterNotebook (it's working)](https://github.com/misun6312/autodiff/blob/master/Theano_Manualdiff.ipynb)   
 This follows the numerical approach to compute the derivative for each parameters from Bing's paper [(Section 3.2 the Supplementary Information)](http://science.sciencemag.org/content/suppl/2013/04/04/340.6128.95.DC1).  
@@ -106,7 +115,8 @@ TensorFlow is a Google-developed Python and C++ library that allows you to defin
 
 
 ### Conclusion
-Both libraries are using the concept of Tensor, which is the element generating a computational flow graph. Nodes in the graph represent mathematical operations, while the graph edges represent the multidimensional data arrays(tensors) communicated between them. A Tensor object is a symbolic handle to the result of an operation, but does not actually hold the values of the operation's output. The strength of Tensor is once you build up complicated expressions as a dataflow graph, then you can offload the computation of the entire graph to a Tensorflow Session, which is able to execute the whole computation much more efficiently than executing the operations one-by-one. 
+Both libraries are using the concept of Tensor, which is the element generating a computational flow graph. Nodes in the graph represent mathematical operations, while the graph edges represent the multidimensional data arrays(tensors) communicated between them. A Tensor object is a symbolic handle to the result of an operation, but does not actually hold the values of the operation's output. 
+The strength of Tensor is once you build up complicated expressions as a dataflow graph, then you can offload the computation of the entire graph to a Tensorflow Session, which is able to execute the whole computation much more efficiently than executing the operations one-by-one. 
 The downside of both libraries is if you want to use the symbolic gradient, They can only compute the symbolic gradient inside computation graph done in Theano/Tensorflow. So you will need to convert that part completely to Theano/Tensorflow functions. And it's hard to debug. The error message is not intuitive because they are following define-and-run method. 
 
-We still can use the numerical method to compute gradients and expect to speed up with GPU. 
+With Theano, I implemented the code to compute gradients numerically and we can use this later to speed up with GPU. 
