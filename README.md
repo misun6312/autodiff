@@ -138,6 +138,7 @@ TensorFlow is a Google-developed Python and C++ library that allows you to defin
 - Placeholder : a variable that we will assign the data later. It allows to create computation graph without data we then feed data into the graph through placeholders.
 - Construct Model(Graph) -> Launch the Graph
 
+There is a summary to compare some libraries in [this link](http://deeplearning4j.org/compare-dl4j-torch7-pylearn.html)
 
 ### Conclusion
 Both libraries are using the concept of Tensor, which is the element generating a computational flow graph. Nodes in the graph represent mathematical operations, while the graph edges represent the multidimensional data arrays(tensors) communicated between them. A Tensor object is a symbolic handle to the result of an operation, but does not actually hold the values of the operation's output. 
