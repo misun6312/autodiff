@@ -27,6 +27,12 @@ function convert(::Array{Float64}, x::Array{ForwardDiff.Dual})
     return y
 end
 
+immutable NumericPair{X,Y} <: Number
+  x::X
+  y::Y
+end
+Base.isless(a::NumericPair, b::NumericPair) = (a.x<b.x) || (a.x==b.x && a.y<b.y)
+
 ## Data Import
 # get trial data
 function trialdata(ratdata, trial)
@@ -72,20 +78,21 @@ which should be equal to the number of bins with bin centers > 0, as follows:
 and then the total number of bins will be 2*binN+1, with the center one always corresponding
 to position zero. Use non-differentiable types for B and dx for this to work.
 """
-function make_bins(B, dx, binN)
-    bins = collect(1.0:binN)*B
-    bins = dx*bins/B
-
-    if bins[end] == B
-        bins[end] = B + dx
-    else
-        bins[end] = 2*B - bins[end-1]
+function make_bins{T}(bins::Vector{T}, B, dx::T, binN)
+    cnt = 1
+    for i=-binN:binN
+        bins[cnt] = i*dx
+        cnt = cnt+1
     end
-
-    bins = [-bins[end:-1:1]; 0; bins]
-    return bins
+    
+    if binN*dx == B
+        bins[end] = B + dx
+        bins[1] = -B - dx
+    else
+        bins[end] = 2*B - (binN-1)*dx
+        bins[1] = -2*B + (binN-1)*dx
+    end
 end;
-
 
 """
 function F = Fmatrix([sigma, lambda, c], bin_centers)
@@ -109,52 +116,47 @@ bin_centers should be a vector of the centers of all the bins. Edges will be at 
 dx is not used inside Fmatrix, because bin_centers specifies all we need to know.
 dt *is* used inside Fmatrix, to convert sigma, lambda, and c into timestep units
 """
-function Fmatrix(params::Vector, bin_centers)
+function Fmatrix{T}(F::AbstractArray{T,2},params::Vector, bin_centers)
     sigma2 = params[1];
     lam   = params[2];
     c     = params[3];
     
     sigma2_sbin = convert(Float64, sigma2)
-  
-    F = zeros(typeof(sigma2),length(bin_centers),length(bin_centers))    
-#     F = collect(1.0:length(bin_centers))*collect(1.0:length(bin_centers))';
-#     F = 0.0*sigma2*F; # Multiplying by that sigma is needed, 
-#                      # for type casting reasons I do not understand...
-
-    # added condition if lambda=0 
-    if lam == 0
-        mus = bin_centers*exp(lam*dt)
-    else
-        mus = (bin_centers + c/lam)*exp(lam*dt) - c/lam
-    end
-
+      
     n_sbins = max(70, ceil(10*sqrt(sigma2_sbin)/dx))
     
     swidth = 5*sqrt(sigma2_sbin)
     sbinsize = swidth/n_sbins;#sbins[2] - sbins[1]
-    sbins    = collect(-swidth:sbinsize:swidth)
-
-    ps       = exp(-sbins.^2/(2*sigma2))#exp(-sbins.^2/(2*sigma^2)) / sqrt(2*sigma^2)
+    base_sbins    = collect(-swidth:sbinsize:swidth)
+    
+    ps       = exp(-base_sbins.^2/(2*sigma2))
     ps       = ps/sum(ps);
+    
+    sbin_length = length(base_sbins)
+    binN = length(bin_centers)
 
-    base_sbins = sbins;
+    mu = 0.
+    for j in 2:binN
+        if lam == 0
+            mu = bin_centers[j]*exp(lam*dt)
+        else
+            mu = (bin_centers[j] + c/lam)*exp(lam*dt) - c/lam
+        end
         
-    for j in 2:length(bin_centers)
-        sbins = collect(0:(length(base_sbins)-1))*sbinsize
-        sbins = sbins + mus[j]-swidth
-
-        for k in 1:length(sbins)
-            if sbins[k] < bin_centers[1] #(bin_centers[1] + bin_centers[2])/2
+        for k in 1:sbin_length
+            sbin = (k-1)*sbinsize + mu - swidth
+             
+            if sbin < bin_centers[1] #(bin_centers[1] + bin_centers[2])/2
                 F[1,j] = F[1,j] + ps[k]
-            elseif bin_centers[end] <= sbins[k]#(bin_centers[end]+bin_centers[end-1])/2 <= sbins[k]
+            elseif bin_centers[end] <= sbin#(bin_centers[end]+bin_centers[end-1])/2 <= sbins[k]
                 F[end,j] = F[end,j] + ps[k]
             else # more condition
-                if (sbins[k] > bin_centers[1] && sbins[k] < bin_centers[2])
+                if (sbin > bin_centers[1] && sbin < bin_centers[2])
                     lp = 1; hp = 2;
-                elseif (sbins[k] > bin_centers[end-1] && sbins[k] < bin_centers[end])
-                    lp = length(bin_centers)-1; hp = length(bin_centers);
+                elseif (sbin > bin_centers[end-1] && sbin < bin_centers[end])
+                    lp = binN-1; hp = binN;
                 else 
-                    lp = floor(Int,((sbins[k]-bin_centers[2])/dx) + 2)#find(bin_centers .<= sbins[k])[end]#Int(floor((sbins[k]-bin_centers[2])/dx) + 1);
+                    lp = floor(Int,((sbin-bin_centers[2])/dx) + 2)#find(bin_centers .<= sbins[k])[end]
                     hp = lp+1#Int(ceil((sbins[k]-bin_centers[2])/dx) + 1);
                 end
 
@@ -168,16 +170,14 @@ function Fmatrix(params::Vector, bin_centers)
                 if lp == hp
                     F[lp,j] = F[lp,j] + ps[k]
                 else
-                    F[hp,j] = F[hp,j] + ps[k]*(sbins[k] - bin_centers[lp])/(bin_centers[hp] - bin_centers[lp])
-                    F[lp,j] = F[lp,j] + ps[k]*(bin_centers[hp] - sbins[k])/(bin_centers[hp] - bin_centers[lp])
+                    F[hp,j] = F[hp,j] + ps[k]*(sbin - bin_centers[lp])/(bin_centers[hp] - bin_centers[lp])
+                    F[lp,j] = F[lp,j] + ps[k]*(bin_centers[hp] - sbin)/(bin_centers[hp] - bin_centers[lp])
                 end                   
             end
         end
     end
     F[:,1] = 0; F[:,end] = 0; F[1,1] = 1; F[end,end] = 1;
-    return F
 end
-
 """
 version with inter-click interval(ici) for c_eff_net / c_eff_tot (followed the matlab code) 
 (which was using dt for c_eff)
@@ -200,11 +200,29 @@ function logProbRight(params::Vector, RightClickTimes::Vector, LeftClickTimes::V
     sigma_a = params[1]; sigma_s = params[2]; sigma_i = params[3]; 
     lambda = params[4]; B = params[5]; bias = params[6]; 
     phi = params[7]; tau_phi = params[8]; lapse = params[9]
-        
-    LeftClicks  = zeros(1, Nsteps); if isempty(RightClickTimes) RightClickTimes = zeros(0) end;
-    RightClicks = zeros(1, Nsteps); if isempty(LeftClickTimes ) LeftClickTimes  = zeros(0) end;
-    for i in ceil((LeftClickTimes+epsilon)/dt)  LeftClicks[Int(i)]  = LeftClicks[Int(i)] + 1 end
-    for i in ceil((RightClickTimes+epsilon)/dt) RightClicks[Int(i)] = RightClicks[Int(i)] + 1 end
+    
+    if isempty(RightClickTimes) RightClickTimes = zeros(0) end;
+    if isempty(LeftClickTimes ) LeftClickTimes  = zeros(0) end;
+    
+    NClicks = zeros(Int, Nsteps); 
+    Lhere  = zeros(Int, length(LeftClickTimes)); 
+    Rhere = zeros(Int, length(RightClickTimes)); 
+    
+    for i in 1:length(LeftClickTimes)
+        Lhere[i] = ceil((LeftClickTimes[i]+epsilon)/dt)
+    end
+    for i in 1:length(RightClickTimes)
+        Rhere[i] = ceil((RightClickTimes[i]+epsilon)/dt)
+    end    
+    
+    for i in Lhere  
+#         LeftClicks[Int(i)]  = LeftClicks[Int(i)]  + 1 
+        NClicks[Int(i)] = NClicks[Int(i)]  + 1
+    end
+    for i in Rhere  
+#         RightClicks[Int(i)] = RightClicks[Int(i)] + 1 
+        NClicks[Int(i)] = NClicks[Int(i)]  + 1
+    end
     
     # === Upgrading from ForwardDiff v0.1 to v0.2
     # instead of using convert we can use floor(Int, ForwardDiff.Dual) and
@@ -214,66 +232,51 @@ function logProbRight(params::Vector, RightClickTimes::Vector, LeftClickTimes::V
 #     my_bias = convert(Float64, bias)  # my_bias won't be differentiated' FD can't do floor()
     binN = ceil(Int, B/dx)#Int(ceil(my_B/dx))  
     binBias = floor(Int, bias/dx) + binN+1  
-    bin_centers = make_bins(B, dx, binN) 
+    bin_centers = zeros(typeof(dx), binN*2+1)
+    make_bins(bin_centers, B, dx, binN)  
 
-    a_trace = zeros(length(bin_centers), Nsteps+1); 
-    c_trace = zeros(1, Nsteps+1)
-    
     a0 = zeros(length(bin_centers),1)*sigma_a*0.0; # That weirdo inexact error thing
     a0[binN+1] = 1-lapse; a0[1] = lapse/2; a0[end] = lapse/2;
     
-    c_eff_r = 0
-    c_eff_l = 0
-    cnt_r = 0
-    cnt_l = 0
-    
-    Fi = Fmatrix([sigma_i, 0, 0.0], bin_centers); 
+    temp_l = [NumericPair(LeftClickTimes[i],-1) for i=1:length(LeftClickTimes)]
+    temp_r = [NumericPair(RightClickTimes[i],1) for i=1:length(RightClickTimes)]
+    allbups = sort!([temp_l; temp_r])
+
+    c_eff = 0.
+    cnt = 0
+        
+    Fi = zeros(typeof(sigma_i),length(bin_centers),length(bin_centers))
+    Fmatrix(Fi,[sigma_i, 0, 0.0], bin_centers)
     a = Fi*a0;
-    a_trace[:,1] = a;
-
-    F0 = Fmatrix([sigma_a*dt, lambda, 0.0], bin_centers)
+    
+    F0 = zeros(typeof(sigma_a),length(bin_centers),length(bin_centers))
+    Fmatrix(F0,[sigma_a*dt, lambda, 0.0], bin_centers)
     for i in 2:Nsteps 
-        c_eff_tot = 0
-        c_eff_net = 0
-
-        tmp_r = RightClicks[i-1]
-        tmp_l = LeftClicks[i-1]
-        if tmp_r+tmp_l == 0.
-            c_eff_tot = 0
-            c_eff_net = 0
-
+        c_eff_tot = 0.
+        c_eff_net = 0.
+        if NClicks[i-1]==0
+            c_eff_tot = 0.
+            c_eff_net = 0.
             a = F0*a
         else
-            for j in 1:RightClicks[i-1]
-                if cnt_r != 0 || j != 1
-                    ici = RightClickTimes[cnt_r+j]-RightClickTimes[cnt_r+j-1]
-                    c_eff_r = 1 + (c_eff_r*phi - 1)*exp(-ici/tau_phi)
-                    c_eff_tot = c_eff_tot + c_eff_r
-                    c_eff_net = c_eff_net + c_eff_r
+            for j in 1:NClicks[i-1]
+                if cnt != 0 || j != 1
+                    ici = allbups[cnt+j].x - allbups[cnt+j-1].x
+                    c_eff = 1 + (c_eff*phi - 1)*exp(-ici/tau_phi)
+                    c_eff_tot = c_eff_tot + c_eff
+                    c_eff_net = c_eff_net + c_eff*allbups[cnt+j].y
                 end
-                if j == RightClicks[i-1]
-                    cnt_r = cnt_r+j
-                end
-            end
-            for j in 1:LeftClicks[i-1]
-                if cnt_l != 0 || j != 1
-                    ici = LeftClickTimes[cnt_l+j]-LeftClickTimes[cnt_l+j-1]
-                    c_eff_l = 1 + (c_eff_l*phi - 1)*exp(-ici/tau_phi)
-                    c_eff_tot = c_eff_tot + c_eff_l
-                    c_eff_net = c_eff_net - c_eff_l
-                end
-                if j == LeftClicks[i-1]
-                    cnt_l = cnt_l+j
+                if j == NClicks[i-1]
+                    cnt = cnt+j
                 end
             end
+
             net_sigma = sigma_a*dt + (sigma_s*c_eff_tot)/total_rate
-            F = Fmatrix(collect([net_sigma; lambda; c_eff_net/dt]), bin_centers)
+            F = zeros(typeof(net_sigma),length(bin_centers),length(bin_centers))
+            Fmatrix(F,[net_sigma, lambda, c_eff_net/dt], bin_centers)
             a = F*a
         end
-        
-        c_trace[i]   = convert(Float64, c_eff_tot)
-        a_trace[:,i] = convert(Array{Float64}, a)
-    end;
+    end
 #     plot(1:Nsteps+1,c_trace[:])    
 #     imshow(a_trace, interpolation="none")
     pright = sum(a[binBias+2:end]) + 
@@ -282,7 +285,6 @@ function logProbRight(params::Vector, RightClickTimes::Vector, LeftClickTimes::V
     
     return log(pright)
 end
-
 
 
 function logLike(params::Vector, RightClickTimes::Vector, LeftClickTimes::Vector, Nsteps::Int, rat_choice::Int)
@@ -340,7 +342,7 @@ end
 function SumLikey_LL(params::Vector, ratdata, ntrials::Int)
     LL        = 0
         
-    for i in 1:ntrials
+    @simd for i in 1:ntrials
         RightClickTimes, LeftClickTimes, maxT, rat_choice = trialdata(ratdata, i)
         Nsteps = Int(ceil(maxT/dt))
 
@@ -356,7 +358,7 @@ function SumLikey(params::Vector, ratdata, ntrials::Int)
     LL        = float(0)
     LLgrad    = zeros(size(params))
     
-    for i in 1:ntrials
+    @simd for i in 1:ntrials
         if rem(i,1000)==0
             println("     sum_ll_all_trials: running trial ", i, "/", ntrials);
         end
@@ -383,7 +385,7 @@ function main()
     println("rawdata of ", ratname, " imported" )
 
     # number of trials
-    ntrials = Int(ratdata["total_trials"])
+    ntrials = 27# Int(ratdata["total_trials"])
 
     # Parameters
     sigma_a = 1.; sigma_s = 0.1; sigma_i = 0.2; 
@@ -420,7 +422,7 @@ function main()
                                 LL_g!,
                                 LL_fg!)
 
-    res = optimize(d4, params, l, u, Fminbox(); 
+    @time res = optimize(d4, params, l, u, Fminbox(); 
              optimizer = GradientDescent, optimizer_o = OptimizationOptions(g_tol = 1e-12,
                                                                             iterations = 10,
                                                                             store_trace = true,
@@ -440,7 +442,9 @@ end
 
 # @code_warntype main()
 main()
+# Profile.print()
+# Profile.clear_malloc_data() 
+
 
 # using ProfileView
-
 # ProfileView.view()
