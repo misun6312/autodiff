@@ -328,7 +328,7 @@ function single_trial(params::Vector, RightClickTimes::Vector, LeftClickTimes::V
 
     hess = 0
 
-    if hess
+    if hess > 0
         result =  HessianResult(params) 
         ForwardDiff.hessian!(result, llikey, params);
     else
@@ -339,11 +339,11 @@ function single_trial(params::Vector, RightClickTimes::Vector, LeftClickTimes::V
     LL     = ForwardDiff.value(result)
     LLgrad = ForwardDiff.gradient(result)
     
-    if hess
+    if hess > 0
         LLhessian = ForwardDiff.hessian(result)
     end
    
-    if hess
+    if hess > 0
         return LL, LLgrad, LLhessian
     else
         return LL, LLgrad
