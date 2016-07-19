@@ -321,14 +321,12 @@ RETURNS:
 
 """
 
-function single_trial(params::Vector, RightClickTimes::Vector, LeftClickTimes::Vector, Nsteps::Int, rat_choice::Int)
+function single_trial(params::Vector, RightClickTimes::Vector, LeftClickTimes::Vector, Nsteps::Int, rat_choice::Int, hess_mode=0::Int)
     function llikey(params::Vector)
         logLike(params, RightClickTimes, LeftClickTimes, Nsteps, rat_choice)
     end
 
-    hess = 0
-
-    if hess > 0
+    if hess_mode > 0
         result =  HessianResult(params) 
         ForwardDiff.hessian!(result, llikey, params);
     else
@@ -339,11 +337,11 @@ function single_trial(params::Vector, RightClickTimes::Vector, LeftClickTimes::V
     LL     = ForwardDiff.value(result)
     LLgrad = ForwardDiff.gradient(result)
     
-    if hess > 0
+    if hess_mode > 0
         LLhessian = ForwardDiff.hessian(result)
     end
    
-    if hess > 0
+    if hess_mode > 0
         return LL, LLgrad, LLhessian
     else
         return LL, LLgrad
@@ -353,7 +351,7 @@ end
 function SumLikey_LL(params::Vector, ratdata, ntrials::Int)
     LL        = 0
         
-    @simd for i in 1:ntrials
+    for i in 1:ntrials
         RightClickTimes, LeftClickTimes, maxT, rat_choice = trialdata(ratdata, i)
         Nsteps = Int(ceil(maxT/dt))
 
@@ -369,7 +367,7 @@ function SumLikey(params::Vector, ratdata, ntrials::Int)
     LL        = float(0)
     LLgrad    = zeros(size(params))
     
-    @simd for i in 1:ntrials
+    for i in 1:ntrials
         if rem(i,1000)==0
             println("     sum_ll_all_trials: running trial ", i, "/", ntrials);
         end
@@ -386,6 +384,15 @@ function SumLikey(params::Vector, ratdata, ntrials::Int)
     LL = -LL
     LLgrad = -LLgrad
     return LL, LLgrad
+end
+
+function Likely_all_trials{T}(LL::AbstractArray{T,1},params::Vector, ratdata, ntrials::Int)     
+    for i in 1:ntrials
+        RightClickTimes, LeftClickTimes, maxT, rat_choice = trialdata(ratdata, i)
+        Nsteps = Int(ceil(maxT/dt))
+
+        LL[i] = logLike(params, RightClickTimes, LeftClickTimes, Nsteps, rat_choice)
+    end
 end
 
 end
