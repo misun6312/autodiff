@@ -11,7 +11,7 @@ Automatic Differentiation is a technology for automatically augmenting computer 
 
 Status
 -------
-* Automatic Differentiation in Julia [(notebook)](https://github.com/misun6312/autodiff/blob/master/Julia_autodiff.ipynb) [(code)](https://github.com/misun6312/autodiff/blob/master/julia/opt_Julia_autodiff_script.jl)
+* Automatic Differentiation in Julia [(notebook)](https://github.com/misun6312/autodiff/blob/master/Julia_autodiff.ipynb) [(Module)](https://github.com/misun6312/autodiff/blob/master/julia/AutodiffModule.jl) [(script)](https://github.com/misun6312/autodiff/blob/master/julia/job_script.jl)
 
 In Julia, now it produces exact same Loglikelihood values as the LL values from the bing's matlab code.  
 And it can compute the gradients for each of the parameters automatically using ForwardDiff (http://www.juliadiff.org/ForwardDiff.jl/index.html). For optimizing the log likelihood function with respect to parameters, we will use Optim(https://github.com/JuliaOpt/Optim.jl). 
