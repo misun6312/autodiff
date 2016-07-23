@@ -314,31 +314,31 @@ RETURNS:
 
 """
 
-function single_trial(params::Vector, RightClickTimes::Vector, LeftClickTimes::Vector, Nsteps::Int, rat_choice::Int, hess_mode=0::Int)
-    function llikey(params::Vector)
-        logLike(params, RightClickTimes, LeftClickTimes, Nsteps, rat_choice)
-    end
+# function single_trial(params::Vector, RightClickTimes::Vector, LeftClickTimes::Vector, Nsteps::Int, rat_choice::Int, hess_mode=0::Int)
+#     function llikey(params::Vector)
+#         logLike(params, RightClickTimes, LeftClickTimes, Nsteps, rat_choice)
+#     end
 
-    if hess_mode > 0
-        result =  HessianResult(params) 
-        ForwardDiff.hessian!(result, llikey, params);
-    else
-        result =  GradientResult(params)
-        ForwardDiff.gradient!(result, llikey, params);
-    end
+#     if hess_mode > 0
+#         result =  HessianResult(params) 
+#         ForwardDiff.hessian!(result, llikey, params);
+#     else
+#         result =  GradientResult(params)
+#         ForwardDiff.gradient!(result, llikey, params);
+#     end
 
-    LL     = ForwardDiff.value(result)
-    LLgrad = ForwardDiff.gradient(result)
+#     LL     = ForwardDiff.value(result)
+#     LLgrad = ForwardDiff.gradient(result)
     
-    if hess_mode > 0
-        LLhessian = ForwardDiff.hessian(result)
-    end
+#     if hess_mode > 0
+#         LLhessian = ForwardDiff.hessian(result)
+#     end
    
-    if hess_mode > 0
-        return LL, LLgrad, LLhessian
-    else
-        return LL, LLgrad
-    end
-end
+#     if hess_mode > 0
+#         return LL, LLgrad, LLhessian
+#     else
+#         return LL, LLgrad
+#     end
+# end
 
 end
