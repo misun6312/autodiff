@@ -2,13 +2,7 @@ module AutodiffModule
 
 import ForwardDiff
 using ForwardDiff
-# import PyPlot
-# using PyPlot
 import Base.convert
-# using MAT
-
-# import Optim
-# using Optim
 
 # Global variables
 const epsilon = 10.0^(-10);
@@ -45,18 +39,18 @@ function trialdata(ratdata, trial::Int)
     end;
 
     if typeof(ratdata["rawdata"]["rightbups"][trial]) <: Array
-        rvec = vec(ratdata["rawdata"]["rightbups"][trial]);
+        rvec = vec(ratdata["rawdata"]["rightbups"][trial])::Array{Float64,1};
     else
-        rvec = []
+        rvec = Float64[]
     end
     if typeof(ratdata["rawdata"]["leftbups"][trial]) <: Array
-        lvec = vec(ratdata["rawdata"]["leftbups"][trial]);
+        lvec = vec(ratdata["rawdata"]["leftbups"][trial])::Array{Float64,1};
     else
-        lvec = []
+        lvec = Float64[]
     end
 
     return rvec, lvec,
-    ratdata["rawdata"]["T"][trial], rat_choice
+    ratdata["rawdata"]["T"][trial]::Float64, rat_choice
 end
 
 """
@@ -125,7 +119,7 @@ function Fmatrix{T}(F::AbstractArray{T,2},params::Vector, bin_centers)
 
     sigma2_sbin = convert(Float64, sigma2)
 
-    n_sbins = max(50, ceil(10*sqrt(sigma2_sbin)/dx))
+    n_sbins = max(70, ceil(10*sqrt(sigma2_sbin)/dx))
 
     F[1,1] = 1;
     F[end,end] = 1;
@@ -245,7 +239,11 @@ function logProbRight(params::Vector, RightClickTimes::Vector, LeftClickTimes::V
     temp_r = [NumericPair(RightClickTimes[i],1) for i=1:length(RightClickTimes)]
     allbups = sort!([temp_l; temp_r])
 
-    c_eff = 0.
+    if phi == 1
+      c_eff = 1.
+    else
+      c_eff = 0.
+    end
     cnt = 0
 
     Fi = zeros(typeof(sigma_i),length(bin_centers),length(bin_centers))
@@ -260,6 +258,9 @@ function logProbRight(params::Vector, RightClickTimes::Vector, LeftClickTimes::V
 
     F0 = zeros(typeof(sigma_a),length(bin_centers),length(bin_centers))
     Fmatrix(F0,[sigma_a*dt, lambda, 0.0], bin_centers)
+
+    # println(F0)
+
     for i in 2:Nsteps
         c_eff_tot = 0.
         c_eff_net = 0.
@@ -284,7 +285,7 @@ function logProbRight(params::Vector, RightClickTimes::Vector, LeftClickTimes::V
             F = zeros(typeof(net_sigma),length(bin_centers),length(bin_centers))
             Fmatrix(F,[net_sigma, lambda, c_eff_net/dt], bin_centers)
             a = F*a
-            # println("  ", net_sigma," , ",c_eff_net)
+            # println("  ", net_sigma," , ",c_eff_tot)
         end
         # println("step ",i," : ",a)
         # println("step ",i," : ",sum(a))
@@ -299,6 +300,14 @@ function logProbRight(params::Vector, RightClickTimes::Vector, LeftClickTimes::V
     # println(sum(a))
     # println(sum(a[binBias+2:end]))
     #
+
+    if pright-1 < epsilon && pright > 1
+        pright = 1
+    end
+    if pright < epsilon && pright > 0
+        pright = 0
+    end
+
     return log(pright)
 end
 

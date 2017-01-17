@@ -231,7 +231,11 @@ function logProbRight(params::Vector, RightClickTimes::Vector, LeftClickTimes::V
     temp_r = [NumericPair(RightClickTimes[i],1) for i=1:length(RightClickTimes)]
     allbups = sort!([temp_l; temp_r])
 
-    c_eff = 0.
+    if phi == 1
+      c_eff = 1.
+    else
+      c_eff = 0.
+    end
     cnt = 0
 
     Fi = zeros(typeof(sigma_i),length(bin_centers),length(bin_centers))
